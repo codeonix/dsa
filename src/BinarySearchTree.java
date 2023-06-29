@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Objects;
 
 class IsBSTReturn {
@@ -226,6 +227,57 @@ public class BinarySearchTree {
       return sum;
     }
 
+
+    public static ArrayList<Integer> nodeToRootPath(BinaryTreeNode<Integer> root, int node) {
+      if(root == null) {
+          return null;
+      }
+
+      if(root.data == node) {
+          ArrayList<Integer> ans = new ArrayList<>();
+          ans.add(root.data);
+          return ans;
+      }
+
+      ArrayList<Integer> leftAns = nodeToRootPath(root.left, node);
+      if(leftAns != null) {
+          leftAns.add(root.data);
+          return leftAns;
+      }
+
+      ArrayList<Integer> rightAns = nodeToRootPath(root.right, node);
+      if(rightAns != null) {
+          rightAns.add(root.data);
+          return rightAns;
+      }
+
+      return null;
+    }
+
+    public static ArrayList<Integer> getPathFromNodeToRootBST(BinaryTreeNode<Integer> root , int node) {
+      if(root == null) {
+          return null;
+      }
+
+      if(root.data == node) {
+          ArrayList<Integer> ans = new ArrayList<>();
+          ans.add(root.data);
+          return ans;
+      } else if (root.data > node) {
+          ArrayList<Integer> leftAns = getPathFromNodeToRootBST(root.left, node);
+          if(leftAns != null) {
+              leftAns.add(root.data);
+          }
+          return leftAns;
+      } else {
+          ArrayList<Integer> rightAns = getPathFromNodeToRootBST(root.right, node);
+          if (rightAns != null) {
+              rightAns.add(root.data);
+          }
+          return rightAns;
+      }
+    }
+
     public static void main(String[] args) {
         //10 5 12 2 7 11 15 -1 -1 -1 -1 -1 -1 -1 -1
         int[] arr = {1,2,3,4,5,6,7,8,9,10};
@@ -237,7 +289,12 @@ public class BinarySearchTree {
         LinkedListNode<Integer> head = bstToSortedLL(root);
         printLL(head);
         System.out.println("\n"+(Objects.requireNonNull(lca(root, 6, 9))).data);
-        replaceWithLargerNodesSum(root);
-        BinaryTree.printLevelWise(root);
+        //replaceWithLargerNodesSum(root);
+        //BinaryTree.printLevelWise(root);
+        ArrayList<Integer> path = getPathFromNodeToRootBST(root,6);
+
+        for(int i : path) {
+            System.out.print(i+ " ");
+        }
     }
 }
