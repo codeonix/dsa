@@ -2,7 +2,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
 
-class BinaryTreeNode<T> {
+    class BinaryTreeNode<T> {
     BinaryTreeNode<T> left;
     T data;
     BinaryTreeNode<T> right;
