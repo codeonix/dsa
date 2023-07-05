@@ -1,5 +1,175 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Objects;
+import java.util.Queue;
+
+class DeleteNodeReturn{
+    BinaryTreeNode<Integer> root;
+    boolean isDeleted;
+
+    DeleteNodeReturn(BinaryTreeNode<Integer> root , boolean isDeleted ) {
+        this.isDeleted = isDeleted;
+        this.root = root;
+    }
+}
+
+class BSTSubtreeReturn{
+    int min;
+    int max;
+    boolean isBST;
+    int height;
+
+    BSTSubtreeReturn(int min , int max , boolean isBST, int height) {
+        this.isBST = isBST;
+        this.height = height;
+        this.min = min;
+        this.max = max;
+    }
+}
+
+class BST {
+    private BinaryTreeNode<Integer> root;
+    private int size;
+
+    public BST() {
+        size = 0;
+        root = null;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    private static boolean isPresentHelper(BinaryTreeNode<Integer> root, int x) {
+        if(root == null) {
+            return false;
+        }
+
+        if(root.data == x) {
+            return true;
+        } else if (root.data > x) {
+            return isPresentHelper(root.left , x);
+        } else {
+            return isPresentHelper(root.right,x);
+        }
+    }
+
+    public boolean isPresent(int ele) {
+        return isPresentHelper(root,ele);
+    }
+
+    private static BinaryTreeNode<Integer> insertHelper(BinaryTreeNode<Integer> root, int ele) {
+        BinaryTreeNode<Integer> newNode = new BinaryTreeNode<>(ele);
+        if(root == null) {
+            return newNode;
+        }
+
+        if (root.data > ele) {
+            root.left = insertHelper(root.left, ele);
+        } else {
+            root.right = insertHelper(root.right,ele);
+        }
+        return root;
+    }
+
+    public void insert(int ele) {
+        size++;
+        root = insertHelper(root,ele);
+    }
+
+
+    private static MinAndMaxReturn minAndMax(BinaryTreeNode<Integer> root ) {
+        if(root == null) {
+            return new MinAndMaxReturn(Integer.MAX_VALUE, Integer.MIN_VALUE);
+        }
+
+        MinAndMaxReturn leftAns = minAndMax(root.left);
+        MinAndMaxReturn rightAns = minAndMax(root.right);
+
+        int min = Math.min(root.data, Math.min(leftAns.minimum, rightAns.minimum));
+        int max = Math.max(root.data, Math.max(leftAns.maximum, rightAns.maximum));
+
+        return new MinAndMaxReturn(min,max);
+    }
+
+
+    public static DeleteNodeReturn deleteHelper(BinaryTreeNode<Integer> root , int x )  {
+        if(root == null) {
+            return new DeleteNodeReturn(null, false);
+        }
+
+        if(x > root.data) {
+           DeleteNodeReturn rightAns = deleteHelper(root.right, x);
+           root.right = rightAns.root;
+           return new DeleteNodeReturn(root,rightAns.isDeleted);
+        }
+
+        if (x < root.data) {
+            DeleteNodeReturn leftAns = deleteHelper(root.left,x);
+            root.left = leftAns.root;
+            return new DeleteNodeReturn(root,leftAns.isDeleted);
+        }
+
+        //Now , deletable node is root:
+        //O children
+        if(root.left == null && root.right == null) {
+            return  new DeleteNodeReturn(null, true);
+        }
+
+        //Only left child
+        if (root.left != null && root.right == null) {
+         return new DeleteNodeReturn(root.left, true);
+        }
+
+        //Only right child :
+        if(root.left == null && root.right != null) {
+            return new DeleteNodeReturn(root.right , true);
+        }
+
+        //If root has both child :
+        int rightMin = minAndMax(root.right).minimum;
+        root.data = rightMin;
+        DeleteNodeReturn outRight = deleteHelper(root.right , rightMin);
+        root.right = outRight.root;
+        return new DeleteNodeReturn(root,true);
+    }
+
+    public boolean delete(int ele) {
+        DeleteNodeReturn out = deleteHelper(root, ele);
+        root = out.root;
+
+        if(out.isDeleted) {
+            size--;
+        }
+
+        return out.isDeleted;
+    }
+
+    private static void printHelper(BinaryTreeNode<Integer> root) {
+        if(root == null) return;
+        Queue<BinaryTreeNode<Integer>> pending = new LinkedList<BinaryTreeNode<Integer>>();
+        pending.add(root);
+
+        while (!pending.isEmpty()) {
+            BinaryTreeNode<Integer> currentNode = pending.poll();
+            System.out.print(currentNode.data+ ": ");
+            if (currentNode.left != null) {
+                System.out.print("L"+currentNode.left.data+ ", ");
+                pending.add(currentNode.left);
+            }
+            if (currentNode.right != null) {
+                System.out.print("R"+currentNode.right.data);
+                pending.add(currentNode.right);
+            }
+            System.out.println();
+        }
+    }
+
+
+    public void print() {
+     printHelper(root);
+    }
+}
 
 class IsBSTReturn {
     int max;
@@ -278,6 +448,71 @@ public class BinarySearchTree {
       }
     }
 
+
+    public static ArrayList<LinkedListNode<Integer>> constructLinkedListForEachLevel(BinaryTreeNode<Integer> root) {
+      if(root == null) {
+          return null;
+      }
+
+      Queue<BinaryTreeNode<Integer>> pending = new LinkedList<>();
+      LinkedListNode<Integer> currentHead = null;
+      LinkedListNode<Integer> currentTail = null;
+      ArrayList<LinkedListNode<Integer>> ans = new ArrayList<>();
+
+      int currentLevelNodesRemaining = 1;
+      int nextLevelNodesCount = 0;
+
+      pending.add(root);
+
+      while (!pending.isEmpty()) {
+          BinaryTreeNode<Integer> currentNode = pending.poll();
+          LinkedListNode<Integer> newNode = new LinkedListNode<>(currentNode.data);
+
+          if(currentHead == null) {
+              currentHead = newNode;
+              currentTail = newNode;
+          } else {
+              currentTail.next = newNode;
+              currentTail = currentTail.next;
+          }
+
+          if(currentNode.left != null) {
+              pending.add(currentNode.left);
+              nextLevelNodesCount++;
+          }
+
+          if(currentNode.right != null) {
+              pending.add(currentNode.right);
+              nextLevelNodesCount++;
+          }
+
+          currentLevelNodesRemaining--;
+          if(currentLevelNodesRemaining == 0) {
+              ans.add(currentHead);
+              currentHead = null;
+              currentTail = null;
+              currentLevelNodesRemaining = nextLevelNodesCount;
+              nextLevelNodesCount=0;
+          }
+      }
+
+      return ans;
+    }
+
+
+    public static int largestBSTSubtree(BinaryTreeNode<Integer> root) {
+        return largestBSTSubtreeHelper(root).height;
+    }
+
+    public static BSTSubtreeReturn largestBSTSubtreeHelper(BinaryTreeNode<Integer> root) {
+      if(root == null) {
+          return new BSTSubtreeReturn(Integer.MAX_VALUE, Integer.MIN_VALUE, true,0);
+      }
+
+      return null;
+    }
+
+
     public static void main(String[] args) {
         //10 5 12 2 7 11 15 -1 -1 -1 -1 -1 -1 -1 -1
         int[] arr = {1,2,3,4,5,6,7,8,9,10};
@@ -295,6 +530,33 @@ public class BinarySearchTree {
 
         for(int i : path) {
             System.out.print(i+ " ");
+        }
+
+
+        BST bst = new BST();
+        bst.insert(1);
+        bst.insert(2);
+        bst.insert(3);
+        bst.insert(4);
+        bst.insert(5);
+        bst.insert(6);
+        bst.insert(7);
+
+        bst.print();
+
+        System.out.println("Size of BST : " + bst.size());
+        System.out.println(bst.delete(6));
+        bst.print();
+        System.out.println("Is x present : " + bst.isPresent(5));
+
+
+        System.out.println("Linked list for each level : ");
+
+        ArrayList<LinkedListNode<Integer>> heads = constructLinkedListForEachLevel(root);
+
+        for(LinkedListNode<Integer> h : heads) {
+            printLL(h);
+            System.out.println();
         }
     }
 }
