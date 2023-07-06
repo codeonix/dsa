@@ -28,8 +28,35 @@ public class ProblemOfTheDay {
         return maxLen;
     }
 
+
+    public static int minSubArrayLen209(int target, int[] nums) {
+       int left = 0;
+       int right = 0;
+       int sum = 0;
+       int minLen = Integer.MAX_VALUE;
+
+       while (right < nums.length) {
+           sum += nums[right];
+
+           //Check if current sum is greater than the target :
+           if(sum >= target) {
+               //shrink window from left side to get smaller window size :
+               while (sum >= target) {
+                   sum -= nums[left];
+                   left++;
+               }
+
+               minLen = Math.min(minLen,right - left + 2);
+           }
+           right++;
+       }
+       return minLen == Integer.MAX_VALUE ? 0 : minLen;
+    }
+
     public static void main(String[] args) {
     int[] arr = {0,1,1,1,0,1,1,0,1};
-        System.out.println(longestSubArray1493(arr));
+    //System.out.println(longestSubArray1493(arr));
+    int[] nums = {2,3,1,2,4,3};
+    System.out.println(minSubArrayLen209(7,nums));
     }
 }
